@@ -3,6 +3,410 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
+    <permission-tree
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"
+        android:label="Google Services Permissions" />
+
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH"
+        android:description="@string/permdesc_googleAuth"
+        android:label="@string/permlab_googleAuth"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="normal" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.ALL_SERVICES"
+        android:description="@string/permdesc_googleAuth_ALL"
+        android:label="@string/permlab_googleAuth_ALL"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.OTHER_SERVICES"
+        android:description="@string/permdesc_googleAuth_OTHER"
+        android:label="@string/permlab_googleAuth_OTHER"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.mail"
+        android:description="@string/permdesc_googleAuth_mail"
+        android:label="@string/permlab_googleAuth_mail"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.cl"
+        android:description="@string/permdesc_googleAuth_cl"
+        android:label="@string/permlab_googleAuth_cl"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.android"
+        android:description="@string/permdesc_googleAuth_android"
+        android:label="@string/permlab_googleAuth_android"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.androidsecure"
+        android:description="@string/permdesc_googleAuth_android"
+        android:label="@string/permlab_googleAuth_android"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.sierra"
+        android:description="@string/permdesc_googleAuth_sierra"
+        android:label="@string/permlab_googleAuth_sierra"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.sierraqa"
+        android:description="@string/permdesc_googleAuth_sierraqa"
+        android:label="@string/permlab_googleAuth_sierraqa"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.sierrasandbox"
+        android:description="@string/permdesc_googleAuth_sierrasandbox"
+        android:label="@string/permlab_googleAuth_sierrasandbox"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.youtube"
+        android:description="@string/permdesc_googleAuth_youtube"
+        android:label="@string/permlab_googleAuth_youtube"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.YouTubeUser"
+        android:description="@string/permdesc_googleAuth_YouTubeUser"
+        android:label="@string/permlab_googleAuth_YouTubeUser"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.talk"
+        android:description="@string/permdesc_googleAuth_talk"
+        android:label="@string/permlab_googleAuth_talk"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.ig"
+        android:description="@string/permdesc_googleAuth_ig"
+        android:label="@string/permlab_googleAuth_ig"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.lh2"
+        android:description="@string/permdesc_googleAuth_lh2"
+        android:label="@string/permlab_googleAuth_lh2"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.mobile"
+        android:description="@string/permdesc_googleAuth_mobile"
+        android:label="@string/permlab_googleAuth_mobile"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.cp"
+        android:description="@string/permdesc_googleAuth_cp"
+        android:label="@string/permlab_googleAuth_cp"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.adsense"
+        android:description="@string/permdesc_googleAuth_adsense"
+        android:label="@string/permlab_googleAuth_adsense"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.adwords"
+        android:description="@string/permdesc_googleAuth_adwords"
+        android:label="@string/permlab_googleAuth_adwords"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.blogger"
+        android:description="@string/permdesc_googleAuth_blogger"
+        android:label="@string/permlab_googleAuth_blogger"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.dodgeball"
+        android:description="@string/permdesc_googleAuth_dodgeball"
+        android:label="@string/permlab_googleAuth_dodgeball"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.gbase"
+        android:description="@string/permdesc_googleAuth_gbase"
+        android:label="@string/permlab_googleAuth_gbase"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.groups2"
+        android:description="@string/permdesc_googleAuth_groups2"
+        android:label="@string/permlab_googleAuth_groups2"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.health"
+        android:description="@string/permdesc_googleAuth_health"
+        android:label="@string/permlab_googleAuth_health"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.jotspot"
+        android:description="@string/permdesc_googleAuth_jotspot"
+        android:label="@string/permlab_googleAuth_jotspot"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.knol"
+        android:description="@string/permdesc_googleAuth_knol"
+        android:label="@string/permlab_googleAuth_knol"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.news"
+        android:description="@string/permdesc_googleAuth_news"
+        android:label="@string/permlab_googleAuth_news"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.orkut"
+        android:description="@string/permdesc_googleAuth_orkut"
+        android:label="@string/permlab_googleAuth_orkut"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.print"
+        android:description="@string/permdesc_googleAuth_print"
+        android:label="@string/permlab_googleAuth_print"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.sitemaps"
+        android:description="@string/permdesc_googleAuth_sitemaps"
+        android:label="@string/permlab_googleAuth_sitemaps"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.wifi"
+        android:description="@string/permdesc_googleAuth_wifi"
+        android:label="@string/permlab_googleAuth_wifi"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.finance"
+        android:description="@string/permdesc_googleAuth_finance"
+        android:label="@string/permlab_googleAuth_finance"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.local"
+        android:description="@string/permdesc_googleAuth_local"
+        android:label="@string/permlab_googleAuth_local"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.ah"
+        android:description="@string/permdesc_googleAuth_ah"
+        android:label="@string/permlab_googleAuth_ah"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.notebook"
+        android:description="@string/permdesc_googleAuth_notebook"
+        android:label="@string/permlab_googleAuth_notebook"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.writely"
+        android:description="@string/permdesc_googleAuth_writely"
+        android:label="@string/permlab_googleAuth_writely"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.wise"
+        android:description="@string/permdesc_googleAuth_wise"
+        android:label="@string/permlab_googleAuth_wise"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.grandcentral"
+        android:description="@string/permdesc_googleAuth_grandcentral"
+        android:label="@string/permlab_googleAuth_grandcentral"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.speechpersonalization"
+        android:description="@string/permdesc_googleAuth_speechpersonalization"
+        android:label="@string/permlab_googleAuth_speechpersonalization"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.speech"
+        android:description="@string/permdesc_googleAuth_speech"
+        android:label="@string/permlab_googleAuth_speech"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.providers.talk.permission.READ_ONLY"
+        android:description="@string/ro_perm_desc"
+        android:label="@string/ro_perm_label"
+        android:permissionGroup="android.permission-group.MESSAGES"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.providers.talk.permission.WRITE_ONLY"
+        android:description="@string/wo_perm_desc"
+        android:label="@string/wo_perm_label"
+        android:permissionGroup="android.permission-group.MESSAGES"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.gtalkservice.permission.GTALK_SERVICE"
+        android:description="@string/sendTalkMsg_perm_desc"
+        android:label="@string/sendTalkMsg_perm_label"
+        android:permissionGroup="android.permission-group.MESSAGES"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.gtalkservice.permission.SEND_HEARTBEAT"
+        android:description="@string/permdesc_heartbeat"
+        android:label="@string/permlab_heartbeat"
+        android:permissionGroup="android.permission-group.NETWORK"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.permission.BROADCAST_DATA_MESSAGE"
+        android:description="@string/perm_data_msg_broadcast_desc"
+        android:label="@string/perm_data_msg_broadcast_label"
+        android:permissionGroup="android.permission-group.NETWORK"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.c2dm.permission.SEND"
+        android:description="@string/perm_data_msg_broadcast_desc"
+        android:label="@string/perm_data_msg_broadcast_label"
+        android:permissionGroup="android.permission-group.NETWORK"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.c2dm.permission.RECEIVE"
+        android:description="@string/perm_receive_data_message_desc"
+        android:label="@string/perm_receive_data_message_label"
+        android:permissionGroup="android.permission-group.NETWORK"
+        android:protectionLevel="normal" />
+    <permission
+        android:name="com.google.android.xmpp.permission.BROADCAST"
+        android:description="@string/perm_xmpp_broadcast_desc"
+        android:label="@string/perm_xmpp_broadcast_label"
+        android:permissionGroup="android.permission-group.NETWORK"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.xmpp.permission.SEND_RECEIVE"
+        android:description="@string/perm_receive_xmpp_desc"
+        android:label="@string/perm_receive_xmpp_label"
+        android:permissionGroup="android.permission-group.NETWORK"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.xmpp.permission.XMPP_ENDPOINT_BROADCAST"
+        android:description="@string/perm_xmpp_endpoint_broadcast_desc"
+        android:label="@string/perm_xmpp_endpoint_broadcast_label"
+        android:permissionGroup="android.permission-group.NETWORK"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.xmpp.permission.USE_XMPP_ENDPOINT"
+        android:description="@string/perm_use_xmpp_endpoint_desc"
+        android:label="@string/perm_use_xmpp_endpoint_label"
+        android:permissionGroup="android.permission-group.NETWORK"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.android.vending.INTENT_VENDING_ONLY"
+        android:description="@string/permdesc_intentVendingOnly"
+        android:label="@string/permlab_intentVendingOnly"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.providers.settings.permission.READ_GSETTINGS"
+        android:description="@string/permdesc_readGsettings"
+        android:label="@string/permlab_readGsettings"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.providers.settings.permission.WRITE_GSETTINGS"
+        android:description="@string/permdesc_writeGsettings"
+        android:label="@string/permlab_writeGsettings"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"
+        android:description="@string/permdesc_readGservices"
+        android:label="@string/permlab_readGservices"
+        android:permissionGroup="android.permission-group.ACCOUNTS"
+        android:protectionLevel="normal" />
+    <permission
+        android:name="com.google.android.providers.gsf.permission.WRITE_GSERVICES"
+        android:description="@string/permdesc_writeGservices"
+        android:label="@string/permlab_writeGservices"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.google.android.gsf.subscribedfeeds.permission.C2D_MESSAGE"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="android.server.checkin.CHECKIN.permission.C2D_MESSAGE"
+        android:protectionLevel="dangerous" />
+
+    <uses-permission android:name="com.google.android.gsf.subscribedfeeds.permission.C2D_MESSAGE" />
+    <uses-permission android:name="android.server.checkin.CHECKIN.permission.C2D_MESSAGE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.SEND" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="com.google.android.xmpp.permission.BROADCAST" />
+    <uses-permission android:name="com.google.android.xmpp.permission.XMPP_ENDPOINT_BROADCAST" />
+    <uses-permission android:name="android.permission.ACCESS_CACHE_FILESYSTEM" />
+    <uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER" />
+    <uses-permission android:name="android.permission.ACCESS_DOWNLOAD_MANAGER_ADVANCED" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.BACKUP" />
+    <uses-permission android:name="android.permission.BROADCAST_STICKY" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.DUMP" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.MASTER_CLEAR" />
+    <uses-permission android:name="android.permission.PERSISTENT_ACTIVITY" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.READ_LOGS" />
+    <uses-permission android:name="android.permission.READ_NETWORK_USAGE_HISTORY" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.REBOOT" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SET_TIME" />
+    <uses-permission android:name="android.permission.STATUS_BAR" />
+    <uses-permission android:name="android.permission.SUBSCRIBED_FEEDS_READ" />
+    <uses-permission android:name="android.permission.SUBSCRIBED_FEEDS_WRITE" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_GSERVICES" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
+    <uses-permission android:name="com.android.vending.INTENT_VENDING_ONLY" />
+    <uses-permission android:name="com.google.android.googleapps.permission.ACCESS_GOOGLE_PASSWORD" />
+    <uses-permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH" />
+    <uses-permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.ALL_SERVICES" />
+    <uses-permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.YouTubeUser" />
+    <uses-permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.mail" />
+    <uses-permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH.youtube" />
+    <uses-permission android:name="com.google.android.googleapps.permission.GOOGLE_MAIL_SWITCH" />
+    <uses-permission android:name="com.google.android.gtalkservice.permission.GTALK_SERVICE" />
+    <uses-permission android:name="com.google.android.gtalkservice.permission.SEND_HEARTBEAT" />
+    <uses-permission android:name="com.google.android.permission.BROADCAST_DATA_MESSAGE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.WRITE_GSERVICES" />
+    <uses-permission android:name="com.google.android.providers.settings.permission.READ_GSETTINGS" />
+    <uses-permission android:name="com.google.android.providers.settings.permission.WRITE_GSETTINGS" />
+    <uses-permission android:name="com.google.android.providers.talk.permission.READ_ONLY" />
+    <uses-permission android:name="com.google.android.providers.talk.permission.WRITE_ONLY" />
+
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="16" />
