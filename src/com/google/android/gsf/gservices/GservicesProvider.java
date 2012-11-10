@@ -8,12 +8,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
+
+import com.google.android.gsf.Gservices;
 
 public class GservicesProvider extends ContentProvider {
 
@@ -111,9 +114,31 @@ public class GservicesProvider extends ContentProvider {
 	public Cursor query(final Uri uri, final String[] projection,
 			final String selection, final String[] selectionArgs,
 			final String sortOrder) {
+		final MatrixCursor cursor = new MatrixCursor(COLUMNS);
+		if (selectionArgs != null) {
+			final String lastSegment = uri.getLastPathSegment();
+			if (lastSegment == null) {
+				querySimple(cursor, selectionArgs);
+			} else if (lastSegment.equals(Gservices.CONTENT_PREFIX_URI
+					.getLastPathSegment())) {
+				queryPrefix(cursor, selectionArgs);
+			}
+		}
+		return cursor;
+	}
+
+	private void queryPrefix(final MatrixCursor cursor,
+			final String[] selectionArgs) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException(
-				"Not yet implemented: GservicesProvider.query");
+				"Not yet implemented: GservicesProvider.queryPrefix");
+	}
+
+	private void querySimple(final MatrixCursor cursor,
+			final String[] selectionArgs) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException(
+				"Not yet implemented: GservicesProvider.querySimple");
 	}
 
 	@Override
@@ -124,7 +149,7 @@ public class GservicesProvider extends ContentProvider {
 			updateMain(values);
 		} else if (lastSegment.equals("main_diff")) {
 			updateMainDiff(values);
-		} else if (lastSegment.equals("overrid")) {
+		} else if (lastSegment.equals("override")) {
 			updateOverride(values);
 		} else {
 			Log.w("GservicesProvider", "bad Gservices update URI: " + uri);
