@@ -414,9 +414,7 @@
     <application android:label="@string/app_name" >
         <provider
             android:name=".gservices.GservicesProvider"
-            android:authorities="com.google.android.gsf.gservices"
-            android:readPermission="com.google.android.providers.gsf.permission.READ_GSERVICES"
-            android:writePermission="com.google.android.providers.gsf.permission.WRITE_GSERVICES" />
+            android:authorities="com.google.android.gsf.gservices" />
 
         <receiver
             android:name=".gservices.GservicesProvider$OverrideReceiver"
@@ -429,8 +427,6 @@
         <provider
             android:name=".settings.GoogleSettingsProvider"
             android:authorities="com.google.settings"
-            android:initOrder="100"
-            android:multiprocess="false"
             android:writePermission="com.google.android.providers.settings.permission.WRITE_GSETTINGS" />
     </application>
 

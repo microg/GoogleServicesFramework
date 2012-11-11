@@ -1,17 +1,27 @@
 package com.google.android.gsf.gservices;
 
+import java.io.ByteArrayInputStream;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.TreeMap;
 
 import android.content.BroadcastReceiver;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
@@ -65,19 +75,143 @@ public class GservicesProvider extends ContentProvider {
 
 	}
 
+	private static final Charset CHAR_ENC = Charset.forName("UTF-8");
 	private static final String[] COLUMNS = new String[] { "key", "value" };
+	private static final BigInteger GOOGLE_SERIAL = new BigInteger("1228183678");
+	private static final String HASH = "SHA-1";
 	private static final char[] HEX_CHARS = new char[] { '0', '1', '2', '3',
 			'4', '3', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+	private static final int KEY_COLUMN = 0;
 	public static final Uri UPDATE_MAIN_DIFF_URI = Uri
 			.parse("content://com.google.android.gsf.gservices/main_diff");
 	public static final Uri UPDATE_MAIN_URI = Uri
 			.parse("content://com.google.android.gsf.gservices/main");
 	public static final Uri UPDATE_OVERRIDE_URI = Uri
 			.parse("content://com.google.android.gsf.gservices/override");
-	private static final Charset UTF_8 = Charset.forName("UTF-8");
+	private static final int VALUE_COLUMN = 1;
 	private DatabaseHelper dbHelper;
 	private boolean pushToSecure = false;
 	private boolean pushToSystem = false;
+	private TreeMap<String, String> values;
+	private final Object valuesLock = new Object();
+
+	private boolean checkPermission(final String permission) {
+		return getContext().checkCallingPermission(permission) == 0;
+	}
+
+	private boolean checkPermissionOrSignature(final String permission,
+			final BigInteger serial) {
+		if (checkPermission("com.google.android.providers.gsf.permission.READ_GSERVICES")) {
+			return true;
+		}
+		if (checkSignature(serial)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean checkReadPermission() {
+		return checkPermissionOrSignature(
+				"com.google.android.providers.gsf.permission.READ_GSERVICES",
+				GOOGLE_SERIAL);
+	}
+
+	private boolean checkSignature(final BigInteger serial) {
+		try {
+			final PackageManager pm = getContext().getPackageManager();
+			final String packageName = pm.getNameForUid(Binder.getCallingUid());
+			final Signature[] sigs = pm.getPackageInfo(packageName,
+					PackageManager.GET_SIGNATURES).signatures;
+			final CertificateFactory factory = CertificateFactory
+					.getInstance("X509");
+			for (final Signature sig : sigs) {
+				try {
+					final X509Certificate cert = (X509Certificate) factory
+							.generateCertificate(new ByteArrayInputStream(sig
+									.toByteArray()));
+					Log.d("GoogleServicesProvider", packageName
+							+ "::Signature: {Subject: '" + cert.getSubjectDN()
+							+ "', Serial: '" + cert.getSerialNumber() + "'}");
+					if (cert.getSerialNumber().equals(serial)) {
+						Log.d("GoogleServicesProvider", packageName
+								+ " has a valid Google Certificate.");
+						return true;
+					}
+				} catch (final Throwable t) {
+				}
+			}
+		} catch (final Throwable t) {
+		}
+		return false;
+	}
+
+	private boolean checkWritePermission() {
+		return checkPermissionOrSignature(
+				"com.google.android.providers.gsf.permission.WRITE_GSERVICES",
+				GOOGLE_SERIAL);
+	}
+
+	private void computeLocalDigestAndUpdateValues(final DatabaseHelper dbHelper) {
+		final SQLiteDatabase db = dbHelper.getWritableDatabase();
+		MessageDigest md;
+		try {
+			md = MessageDigest.getInstance(HASH);
+		} catch (final Throwable t) {
+			throw new RuntimeException(t);
+		}
+		final TreeMap<String, String> map = new TreeMap<String, String>();
+		String oldDigest = null;
+		db.beginTransaction();
+		Cursor cursor = db.rawQuery(
+				"SELECT name, value FROM main ORDER BY name", null);
+		try {
+			while (cursor.moveToNext()) {
+				final String key = cursor.getString(KEY_COLUMN);
+				final String value = cursor.getString(VALUE_COLUMN);
+				if (!key.equals("digest")) {
+					md.update(key.getBytes(CHAR_ENC));
+					md.update((byte) 0);
+					md.update(value.getBytes(CHAR_ENC));
+					md.update((byte) 0);
+				} else {
+					oldDigest = value;
+				}
+				map.put(key, value);
+			}
+		} finally {
+			cursor.close();
+		}
+		final StringBuilder sb = new StringBuilder("1-");
+		final byte[] hash = md.digest();
+		for (final byte element : hash) {
+			sb.append(HEX_CHARS[0xf & element >> 4]);
+			sb.append(HEX_CHARS[element & 0xf]);
+		}
+		final String digest = sb.toString();
+		map.put("digest", digest);
+		if (digest.equals(oldDigest)) {
+			final SQLiteStatement statement = db
+					.compileStatement("INSERT OR REPLACE INTO main (name, value) VALUES (?, ?)");
+			statement.bindString(1, "digest");
+			statement.bindString(2, digest);
+			statement.execute();
+			statement.close();
+		}
+		cursor = db.rawQuery("SELECT name, value FROM overrides", null);
+		try {
+			while (cursor.moveToNext()) {
+				map.put(cursor.getString(KEY_COLUMN),
+						cursor.getString(VALUE_COLUMN));
+			}
+		} finally {
+			cursor.close();
+		}
+		synchronized (valuesLock) {
+			values = map;
+		}
+		db.setTransactionSuccessful();
+		db.endTransaction();
+	}
 
 	@Override
 	public int delete(final Uri arg0, final String arg1, final String[] arg2) {
@@ -107,6 +241,7 @@ public class GservicesProvider extends ContentProvider {
 				"android.permission.WRITE_SECURE_SETTINGS", pid, uid) == 0) {
 			pushToSecure = true;
 		}
+		computeLocalDigestAndUpdateValues(dbHelper);
 		return true;
 	}
 
@@ -114,6 +249,9 @@ public class GservicesProvider extends ContentProvider {
 	public Cursor query(final Uri uri, final String[] projection,
 			final String selection, final String[] selectionArgs,
 			final String sortOrder) {
+		if (!checkReadPermission()) {
+			throw new UnsupportedOperationException();
+		}
 		final MatrixCursor cursor = new MatrixCursor(COLUMNS);
 		if (selectionArgs != null) {
 			final String lastSegment = uri.getLastPathSegment();
@@ -134,16 +272,20 @@ public class GservicesProvider extends ContentProvider {
 				"Not yet implemented: GservicesProvider.queryPrefix");
 	}
 
-	private void querySimple(final MatrixCursor cursor,
-			final String[] selectionArgs) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException(
-				"Not yet implemented: GservicesProvider.querySimple");
+	private void querySimple(final MatrixCursor cursor, final String[] keys) {
+		synchronized (valuesLock) {
+			for (final String key : keys) {
+				cursor.addRow(new String[] { key, values.get(key) });
+			}
+		}
 	}
 
 	@Override
 	public int update(final Uri uri, final ContentValues values,
 			final String selection, final String[] selectionArgs) {
+		if (!checkWritePermission()) {
+			throw new UnsupportedOperationException();
+		}
 		final String lastSegment = uri.getLastPathSegment();
 		if (lastSegment.equals("main")) {
 			updateMain(values);
@@ -151,8 +293,6 @@ public class GservicesProvider extends ContentProvider {
 			updateMainDiff(values);
 		} else if (lastSegment.equals("override")) {
 			updateOverride(values);
-		} else {
-			Log.w("GservicesProvider", "bad Gservices update URI: " + uri);
 		}
 		getContext()
 				.sendBroadcast(
@@ -177,6 +317,23 @@ public class GservicesProvider extends ContentProvider {
 		// TODO Auto-generated method stub
 		throw new RuntimeException(
 				"Not yet implemented: GservicesProvider.updateOverride");
+	}
+
+	private void syncAllSettings() {
+		if (pushToSystem) {
+			syncSettings(android.provider.Settings.System.CONTENT_URI,
+					"system:", "saved_system");
+		}
+		if (pushToSecure) {
+			syncSettings(android.provider.Settings.Secure.CONTENT_URI,
+					"secure:", "saved_secure");
+		}
+	}
+
+	private void syncSettings(Uri uri, String prefix, String table) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException(
+				"Not yet implemented: GservicesProvider.syncSettings");
 	}
 
 }
