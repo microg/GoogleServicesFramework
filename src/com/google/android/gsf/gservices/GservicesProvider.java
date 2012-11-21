@@ -6,6 +6,8 @@ import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Map.Entry;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import android.content.BroadcastReceiver;
@@ -267,9 +269,33 @@ public class GservicesProvider extends ContentProvider {
 
 	private void queryPrefix(final MatrixCursor cursor,
 			final String[] selectionArgs) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException(
-				"Not yet implemented: GservicesProvider.queryPrefix");
+		String sa = "";
+		for (String string : selectionArgs) {
+			sa += string + " : ";
+		}
+		sa = sa.substring(0, sa.length() - 3);
+		for (String arg : selectionArgs) {
+			String limit = getPrefixLimit(arg);
+			SortedMap<String, String> sortedmap;
+			if (limit == null) {
+				sortedmap = values.tailMap(arg);
+			} else {
+				sortedmap = values.subMap(arg, limit);
+			}
+			for (Entry<String, String> entry : sortedmap.entrySet()) {
+				cursor.addRow(new String[] { entry.getKey(), entry.getValue() });
+			}
+		}
+	}
+
+	private String getPrefixLimit(String string) {
+		for (int i = string.length() - 1; i > 0; i--) {
+			char c = string.charAt(i);
+			if (c < '\uFFFF') {
+				return string.substring(0, i) + (char) (c + 1);
+			}
+		}
+		return null;
 	}
 
 	private void querySimple(final MatrixCursor cursor, final String[] keys) {

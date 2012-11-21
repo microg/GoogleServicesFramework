@@ -1,12 +1,17 @@
 package com.google.android.gsf.settings;
 
 import android.content.ContentProvider;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.SystemProperties;
+import android.provider.Settings;
 
-import com.google.android.gsf.gservices.GservicesProvider.DatabaseHelper;
+import com.google.android.gsf.GoogleSettingsContract;
 
 public class GoogleSettingsProvider extends ContentProvider {
 
@@ -16,14 +21,39 @@ public class GoogleSettingsProvider extends ContentProvider {
 		public String table;
 		public String where;
 
-		public SqlArguments(final Uri uri) {
-			this(uri, null, null);
+		SqlArguments(final Uri uri) {
+			if (uri.getPathSegments().size() != 1) {
+				throw new IllegalArgumentException("Invalid URI: " + uri);
+			}
+			table = uri.getPathSegments().get(0);
+			where = null;
+			args = null;
 		}
 
-		public SqlArguments(final Uri uri, final String selection,
+		SqlArguments(final Uri uri, final String selection,
 				final String[] selectionArgs) {
-			// TODO Auto-generated constructor stub
-			throw new RuntimeException("Not yet implemented: SqlArguments.ctor");
+			table = uri.getPathSegments().get(0);
+			if (uri.getPathSegments().size() == 1) {
+				where = selection;
+				args = selectionArgs;
+			} else {
+				if (uri.getPathSegments().size() != 2) {
+					throw new IllegalArgumentException("Invalid URI: " + uri);
+				}
+				if (selection != null && !selection.isEmpty()) {
+					throw new UnsupportedOperationException(
+							(new StringBuilder())
+									.append("WHERE clause not supported: ")
+									.append(uri).toString());
+				}
+				if (table.equals("partner")) {
+					where = "name=?";
+					args = new String[] { uri.getPathSegments().get(1) };
+				} else {
+					where = "_id=" + ContentUris.parseId(uri);
+					args = null;
+				}
+			}
 		}
 
 	}
@@ -97,9 +127,25 @@ public class GoogleSettingsProvider extends ContentProvider {
 	public Cursor query(final Uri uri, final String[] projection,
 			final String selection, final String[] selectionArgs,
 			final String sortOrder) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException(
-				"Not yet implemented: GoogleSettingsProvider.query");
+		SqlArguments sqlargs = new SqlArguments(uri, selection, selectionArgs);
+		SQLiteDatabase db = openHelper.getReadableDatabase();
+		ContentResolver resolver = getContext().getContentResolver();
+		if (openHelper.assistedGpsSettingNeedsUpdate() && linkAssistedGps) {
+			boolean localSetting = (GoogleSettingsContract.Partner.getInt(
+					resolver, "network_location_opt_in", 0) == 1);
+			boolean secureSetting = (Settings.Secure.getInt(resolver,
+					"assisted_gps_enabled", 1) != 0);
+			if (localSetting != secureSetting) {
+				Settings.Secure.putInt(resolver, "assisted_gps_enabled",
+						localSetting ? 1 : 0);
+			}
+		}
+		SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+		queryBuilder.setTables(sqlargs.table);
+		Cursor cursor = queryBuilder.query(db, projection, sqlargs.where,
+				sqlargs.args, null, null, sortOrder);
+		cursor.setNotificationUri(resolver, uri);
+		return cursor;
 	}
 
 	private void sendNotify(final Uri uri) {
