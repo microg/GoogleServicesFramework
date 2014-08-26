@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -27,11 +28,7 @@ import java.util.TreeMap;
 
 public class GservicesProvider extends ContentProvider {
 
-	private static final Charset CHAR_ENC = Charset.forName("UTF-8");
-
-	private static final String[] COLUMNS = new String[]{"key", "value"};
 	private static final BigInteger GOOGLE_SERIAL = new BigInteger("1228183678");
-	private static final String HASH = "SHA-1";
 	private static final char[] HEX_CHARS =
 			new char[]{'0', '1', '2', '3', '4', '3', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 	private static final int KEY_COLUMN = 0;
@@ -41,38 +38,23 @@ public class GservicesProvider extends ContentProvider {
 	public static final Uri UPDATE_OVERRIDE_URI = Uri.parse("content://com.google.android.gsf.gservices/override");
 	private static final int VALUE_COLUMN = 1;
 
-	private static String arrayToString(final String[] array) {
-		if (array == null) {
-			return "null";
-		}
-		final StringBuilder sb = new StringBuilder("[");
-		boolean first = true;
-		for (final String string : array) {
-			if (!first) {
-				sb.append(", ");
-			}
-			sb.append(string);
-			first = false;
-		}
-		return sb.append("]").toString();
-	}
-
 	private DatabaseHelper dbHelper;
 	private boolean pushToSecure = false;
 	private boolean pushToSystem = false;
 	private TreeMap<String, String> values;
 
 	private final Object valuesLock = new Object();
+    private MessageDigest md;
 
-	private boolean checkPermission(final String permission) {
-		return getContext().checkCallingPermission(permission) == 0;
-	}
+    private boolean checkCallingPermission(final String permission) {
+        return getContext().checkCallingPermission(permission) == PackageManager.PERMISSION_GRANTED;
+    }
 
 	private boolean checkPermissionOrSignature(final String permission, final BigInteger... serials) {
-		if (checkPermission(permission)) {
-			return true;
-		}
-		for (BigInteger serial : serials) {
+        if (checkCallingPermission(permission)) {
+            return true;
+        }
+        for (BigInteger serial : serials) {
 			if (checkSignature(serial)) {
 				return true;
 			}
@@ -81,15 +63,15 @@ public class GservicesProvider extends ContentProvider {
 	}
 
 	private boolean checkReadPermission() {
-		return checkPermissionOrSignature("com.google.android.providers.gsf.permission.READ_GSERVICES", GOOGLE_SERIAL,
-										  getSignatureSerials("com.google.android.gsf")[0]);
-	}
+        return checkPermissionOrSignature("com.google.android.providers.gsf.permission.READ_GSERVICES",
+                getSignatureSerials("com.google.android.gsf", GOOGLE_SERIAL));
+    }
 
-	private BigInteger[] getSignatureSerials(String packageName) {
-		ArrayList<BigInteger> serials = new ArrayList<BigInteger>();
-		try {
-			final PackageManager pm = getContext().getPackageManager();
-			final Signature[] sigs = pm.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures;
+    private BigInteger[] getSignatureSerials(String packageName, BigInteger additionalSerial) {
+        ArrayList<BigInteger> serials = new ArrayList<BigInteger>();
+        try {
+            final PackageManager pm = getContext().getPackageManager();
+            final Signature[] sigs = pm.getPackageInfo(packageName, PackageManager.GET_SIGNATURES).signatures;
 			final CertificateFactory factory = CertificateFactory.getInstance("X509");
 			for (final Signature sig : sigs) {
 				try {
@@ -105,17 +87,23 @@ public class GservicesProvider extends ContentProvider {
 		} catch (Exception e) {
 			// Ignore
 		}
-		return serials.toArray(new BigInteger[serials.size()]);
-	}
+        if (additionalSerial == null) {
+            return serials.toArray(new BigInteger[serials.size()]);
+        } else {
+            BigInteger[] result = serials.toArray(new BigInteger[serials.size() + 1]);
+            result[serials.size()] = additionalSerial;
+            return result;
+        }
+    }
 
 	private boolean checkSignature(final BigInteger serial) {
 		try {
 			final PackageManager pm = getContext().getPackageManager();
 			final String packageName = pm.getNameForUid(Binder.getCallingUid());
-			final BigInteger[] serials = getSignatureSerials(packageName);
-			for (BigInteger s : serials) {
-				if (s.equals(serial)) {
-					return true;
+            final BigInteger[] serials = getSignatureSerials(packageName, null);
+            for (BigInteger s : serials) {
+                if (s.equals(serial)) {
+                    return true;
 				}
 			}
 		} catch (final Throwable t) {
@@ -124,20 +112,15 @@ public class GservicesProvider extends ContentProvider {
 	}
 
 	private boolean checkWritePermission() {
-		return checkPermissionOrSignature("com.google.android.providers.gsf.permission.WRITE_GSERVICES",
-										  GOOGLE_SERIAL) || true; // TODO do real check here!
-	}
+        return checkPermissionOrSignature("com.google.android.providers.gsf.permission.WRITE_GSERVICES",
+                getSignatureSerials("com.google.android.gsf", GOOGLE_SERIAL));
+    }
 
-	private void computeLocalDigestAndUpdateValues(final DatabaseHelper dbHelper) {
-		final SQLiteDatabase db = dbHelper.getWritableDatabase();
-		MessageDigest md;
-		try {
-			md = MessageDigest.getInstance(HASH);
-		} catch (final Throwable t) {
-			throw new RuntimeException(t);
-		}
-		final TreeMap<String, String> map = new TreeMap<String, String>();
-		String oldDigest = null;
+    private boolean computeLocalDigestAndUpdateValues() {
+        final SQLiteDatabase db = dbHelper.getWritableDatabase();
+        final TreeMap<String, String> map = new TreeMap<String, String>();
+        md.reset();
+        String oldDigest = null;
 		db.beginTransaction();
 		Cursor cursor = db.rawQuery("SELECT name, value FROM main ORDER BY name", null);
 		try {
@@ -145,9 +128,9 @@ public class GservicesProvider extends ContentProvider {
 				final String key = cursor.getString(KEY_COLUMN);
 				final String value = cursor.getString(VALUE_COLUMN);
 				if (!key.equals("digest")) {
-					md.update(key.getBytes(CHAR_ENC));
+					md.update(key.getBytes());
 					md.update((byte) 0);
-					md.update(value.getBytes(CHAR_ENC));
+					md.update(value.getBytes());
 					md.update((byte) 0);
 				} else {
 					oldDigest = value;
@@ -167,15 +150,13 @@ public class GservicesProvider extends ContentProvider {
 		map.put("digest", digest);
 
 		if (!digest.equals(oldDigest)) {
-			final SQLiteStatement statement =
-					db.compileStatement("INSERT OR REPLACE INTO main (name, value) VALUES (?, ?)");
-			statement.bindString(1, "digest");
-			statement.bindString(2, digest);
-			statement.execute();
-			statement.close();
-		}
-		cursor = db.rawQuery("SELECT name, value FROM overrides", null);
-		try {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("name", "digest");
+            contentValues.put("value", digest);
+            db.insertWithOnConflict("main", null, contentValues, SQLiteDatabase.CONFLICT_REPLACE);
+        }
+        cursor = db.rawQuery("SELECT name, value FROM overrides", null);
+        try {
 			while (cursor.moveToNext()) {
 				map.put(cursor.getString(KEY_COLUMN), cursor.getString(VALUE_COLUMN));
 			}
@@ -187,7 +168,8 @@ public class GservicesProvider extends ContentProvider {
 		}
 		db.setTransactionSuccessful();
 		db.endTransaction();
-	}
+        return !digest.equals(oldDigest);
+    }
 
 	@Override
 	public int delete(final Uri arg0, final String arg1, final String[] arg2) {
@@ -216,33 +198,38 @@ public class GservicesProvider extends ContentProvider {
 
 	@Override
 	public boolean onCreate() {
+        try {
+            md = MessageDigest.getInstance("SHA-1");
+        } catch (Exception e) {
+            Log.w(TAG, "Can't hash digest, this will cause problems!", e);
+        }
 		dbHelper = new DatabaseHelper(getContext());
 		final int pid = Process.myPid();
 		final int uid = Process.myUid();
-		if (getContext().checkPermission("android.permission.WRITE_SETTINGS", pid, uid) == 0) {
-			pushToSystem = true;
-		}
-		if (getContext().checkPermission("android.permission.WRITE_SECURE_SETTINGS", pid, uid) == 0) {
-			pushToSecure = true;
-		}
-		computeLocalDigestAndUpdateValues(dbHelper);
-		return true;
+        if (getContext().checkPermission("android.permission.WRITE_SETTINGS", pid, uid) == PackageManager.PERMISSION_GRANTED) {
+            pushToSystem = true;
+        }
+        if (getContext().checkPermission("android.permission.WRITE_SECURE_SETTINGS", pid, uid) == PackageManager.PERMISSION_GRANTED) {
+            pushToSecure = true;
+        }
+        computeLocalDigestAndUpdateValues();
+        return true;
 	}
 
 	@Override
 	public Cursor query(final Uri uri, final String[] projection, final String selection, final String[] selectionArgs,
 						final String sortOrder) {
-		Log.d(TAG, "query(" + uri + ", " + arrayToString(projection) + ", " + selection + ", " +
-				   arrayToString(selectionArgs) + ", " + sortOrder + ")");
 		if (!checkReadPermission()) {
-			throw new UnsupportedOperationException();
-		}
-		final MatrixCursor cursor = new MatrixCursor(COLUMNS);
+            Log.d(TAG, "no permission to read during query(" + uri + ", " + projection + ", " + selection + ", " +
+                    selectionArgs + ", " + sortOrder + ")");
+            throw new UnsupportedOperationException();
+        }
+        final MatrixCursor cursor = new MatrixCursor(new String[]{"key", "value"});
 		if (selectionArgs != null) {
 			final String lastSegment = uri.getLastPathSegment();
 			if (lastSegment == null) {
 				querySimple(cursor, selectionArgs);
-			} else if (lastSegment.equals(Gservices.PREFIX_URI.getLastPathSegment())) {
+			} else if (lastSegment.equals("prefix")) {
 				queryPrefix(cursor, selectionArgs);
 			}
 		}
@@ -250,11 +237,6 @@ public class GservicesProvider extends ContentProvider {
 	}
 
 	private void queryPrefix(final MatrixCursor cursor, final String[] selectionArgs) {
-		String sa = "";
-		for (final String string : selectionArgs) {
-			sa += string + " : ";
-		}
-		sa = sa.substring(0, sa.length() - 3);
 		for (final String arg : selectionArgs) {
 			final String limit = getPrefixLimit(arg);
 			SortedMap<String, String> sortedmap;
@@ -293,38 +275,37 @@ public class GservicesProvider extends ContentProvider {
 
 	@Override
 	public int update(final Uri uri, final ContentValues values, final String selection, final String[] selectionArgs) {
-		Log.d(TAG, "update(" + uri + ", " + values + ", " + selection + ", " + arrayToString(selectionArgs) + ")");
 		if (!checkWritePermission()) {
-			throw new UnsupportedOperationException();
-		}
-		final String lastSegment = uri.getLastPathSegment();
-		if (lastSegment.equals("main")) {
-			updateMain(values);
-		} else if (lastSegment.equals("main_diff")) {
-			updateMainDiff(values);
-		} else if (lastSegment.equals("override")) {
-			updateOverride(values);
-		}
-		getContext().sendBroadcast(new Intent("com.google.gservices.intent.action.GSERVICES_CHANGED"));
-		return 0;
-	}
+            Log.d(TAG, "no permission to write during update(" + uri + ", " + values + ", " + selection + ", " +
+                    selectionArgs + ")");
+            throw new UnsupportedOperationException();
+        }
+        final String lastSegment = uri.getLastPathSegment();
+        if (lastSegment.equals("main") && updateMain(values) ||
+                lastSegment.equals("main_diff") && updateMainDiff(values) ||
+                lastSegment.equals("override") && updateOverride(values)) {
+            getContext().sendBroadcast(new Intent("com.google.gservices.intent.action.GSERVICES_CHANGED"));
+            return 1;
+        }
+        return 0;
+    }
 
-	private void updateMain(final ContentValues values) {
-		SQLiteDatabase db = dbHelper.getWritableDatabase();
-		db.insertWithOnConflict("main", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    private boolean updateMain(final ContentValues values) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.insertWithOnConflict("main", null, values, SQLiteDatabase.CONFLICT_REPLACE);
 		db.close();
-		computeLocalDigestAndUpdateValues(dbHelper);
-	}
+        return computeLocalDigestAndUpdateValues();
+    }
 
-	private void updateMainDiff(final ContentValues values) {
-		// TODO Auto-generated method stub
-		Log.w(TAG, "Not yet implemented: GservicesProvider.updateMainDiff");
-	}
+    private boolean updateMainDiff(final ContentValues values) {
+        Log.w(TAG, "Not yet implemented: GservicesProvider.updateMainDiff: " + values);
+        return false;
+    }
 
-	private void updateOverride(final ContentValues values) {
-		// TODO Auto-generated method stub
-		Log.w(TAG, "Not yet implemented: GservicesProvider.updateOverride");
-	}
+    private boolean updateOverride(final ContentValues values) {
+        Log.w(TAG, "Not yet implemented: GservicesProvider.updateOverride: " + values);
+        return false;
+    }
 
     public static class OverrideReceiver extends BroadcastReceiver {
 

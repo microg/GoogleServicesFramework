@@ -16,22 +16,6 @@ public class GoogleSettingsProvider extends ContentProvider {
 
 	private static final String TAG = "GoogleSettingsProvider";
 
-	private static String arrayToString(final String[] array) {
-		if (array == null) {
-			return "null";
-		}
-		final StringBuilder sb = new StringBuilder("[");
-		boolean first = true;
-		for (final String string : array) {
-			if (!first) {
-				sb.append(", ");
-			}
-			sb.append(string);
-			first = false;
-		}
-		return sb.append("]").toString();
-	}
-
 	private boolean linkAssistedGps = false;
 
 	private DatabaseHelper openHelper;
@@ -94,8 +78,8 @@ public class GoogleSettingsProvider extends ContentProvider {
 	@Override
 	public Cursor query(final Uri uri, final String[] projection, final String selection, final String[] selectionArgs,
 						final String sortOrder) {
-		Log.d(TAG, "query(" + uri + ", " + arrayToString(projection) + ", " + selection + ", " +
-				   arrayToString(selectionArgs) + ", " + sortOrder + ")");
+		/*Log.d(TAG, "query(" + uri + ", " + projection + ", " + selection + ", " +
+				   selectionArgs + ", " + sortOrder + ")");*/
 		final SqlArguments sqlargs = new SqlArguments(uri, selection, selectionArgs);
 		final SQLiteDatabase db = openHelper.getReadableDatabase();
 		final ContentResolver resolver = getContext().getContentResolver();
@@ -121,7 +105,7 @@ public class GoogleSettingsProvider extends ContentProvider {
 
 	@Override
 	public int update(final Uri uri, final ContentValues values, final String selection, final String[] selectionArgs) {
-		Log.d(TAG, "update(" + uri + ", " + values + ", " + selection + ", " + arrayToString(selectionArgs) + ")");
+		//Log.d(TAG, "update(" + uri + ", " + values + ", " + selection + ", " + selectionArgs + ")");
 		final SqlArguments arguments = new SqlArguments(uri, selection, selectionArgs);
 		checkWritePermissions(arguments);
 		final int result =

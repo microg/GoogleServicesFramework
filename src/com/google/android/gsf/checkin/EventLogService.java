@@ -15,8 +15,7 @@ public class EventLogService extends Service {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			// TODO Auto-generated method stub
-			Log.w(TAG, "Not yet implemented: BroadcastReceiver.onReceive");
+            // I never log!
 
 		}
 
