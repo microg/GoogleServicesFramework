@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.os.SystemProperties;
 import android.provider.Settings;
 import android.util.Log;
 import com.google.android.gsf.GoogleSettingsContract;
@@ -17,7 +16,6 @@ public class GoogleSettingsProvider extends ContentProvider {
 	private static final String TAG = "GoogleSettingsProvider";
 
 	private boolean linkAssistedGps = false;
-
 	private DatabaseHelper openHelper;
 
 	private void checkWritePermissions(final SqlArguments arguments) {
@@ -64,10 +62,19 @@ public class GoogleSettingsProvider extends ContentProvider {
 		return null;
 	}
 
+    public static String getSystemProperty(String name, String def) {
+        try {
+            return (String) Class.forName("android.os.SystemProperties").getMethod("get", String.class, String.class).invoke(null, name, def);
+        } catch (Exception e) {
+            Log.w("SystemPropertiesReflection", e);
+            return def;
+        }
+    }
+
 	@Override
 	public boolean onCreate() {
 		openHelper = new DatabaseHelper(getContext());
-		final String agps = SystemProperties.get("ro.gps.agps_provider", null);
+        final String agps = getSystemProperty("ro.gps.agps_provider", null);
 		if (agps == null || agps.isEmpty() || agps.toLowerCase().contains("google") ||
 			agps.toLowerCase().contains("μg")) {
 			linkAssistedGps = true;
@@ -88,7 +95,11 @@ public class GoogleSettingsProvider extends ContentProvider {
 					(GoogleSettingsContract.Partner.getInt(resolver, "network_location_opt_in", 0) == 1);
 			final boolean secureSetting = (Settings.Secure.getInt(resolver, "assisted_gps_enabled", 1) != 0);
 			if (localSetting != secureSetting) {
-				Settings.Secure.putInt(resolver, "assisted_gps_enabled", localSetting ? 1 : 0);
+                try {
+                    Settings.Secure.putInt(resolver, "assisted_gps_enabled", localSetting ? 1 : 0);
+                } catch (Exception e) {
+                    Log.w(TAG, "Should update assisted_gps_enabled, but got exception", e);
+                }
 			}
 		}
 		final SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
