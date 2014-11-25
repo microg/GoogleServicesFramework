@@ -6,19 +6,16 @@ import android.content.pm.Signature;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.util.Log;
-import com.google.android.gsf.Gservices;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -236,7 +233,7 @@ public class GservicesProvider extends ContentProvider {
 		return cursor;
 	}
 
-	private void queryPrefix(final MatrixCursor cursor, final String[] selectionArgs) {
+	private void queryPrefix(final MatrixCursor cursor, final String... selectionArgs) {
 		for (final String arg : selectionArgs) {
 			final String limit = getPrefixLimit(arg);
 			SortedMap<String, String> sortedmap;
@@ -265,11 +262,13 @@ public class GservicesProvider extends ContentProvider {
 		}
 		if (pushToSecure) {
 			syncSettings(android.provider.Settings.Secure.CONTENT_URI, "secure:", "saved_secure");
-		}
+        }
 	}
 
 	private void syncSettings(final Uri uri, final String prefix, final String table) {
-		// TODO Auto-generated method stub
+        final MatrixCursor cursor = new MatrixCursor(new String[]{"key", "value"});
+        queryPrefix(cursor, prefix);
+        // TODO Auto-generated method stub
 		Log.w(TAG, "Not yet implemented: GservicesProvider.syncSettings");
 	}
 
@@ -294,7 +293,11 @@ public class GservicesProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         db.insertWithOnConflict("main", null, values, SQLiteDatabase.CONFLICT_REPLACE);
 		db.close();
-        return computeLocalDigestAndUpdateValues();
+        if (computeLocalDigestAndUpdateValues()) {
+            Log.d(TAG, "changed " + values.get("name") + " to " + values.get("value") + " and digest is now " + this.values.get("digest"));
+            return true;
+        }
+        return false;
     }
 
     private boolean updateMainDiff(final ContentValues values) {

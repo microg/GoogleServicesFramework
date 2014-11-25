@@ -1,11 +1,14 @@
 package com.google.android.gsf.gtalkservice;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.hardware.location.GeofenceHardware;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -70,24 +73,37 @@ public class PushMessagingRegistrar extends IntentService {
 	}
 
 	private void register(Intent intent) throws IOException {
-		// TODO Auto-generated method stub
 		Log.d(TAG, "register: " + intent);
-		PendingIntent pendingIntent = (PendingIntent) intent.getParcelableExtra("app");
+        Intent outIntent = new Intent("com.google.android.c2dm.intent.REGISTRATION");
+		PendingIntent pendingIntent = intent.getParcelableExtra("app");
 		String sender = intent.getStringExtra("sender");
 		String app = packageFromPendingIntent(pendingIntent);
-		AndroidContext info = PrivacyExtension.getAndroidContext(this);
-		Log.d(TAG, app + ", " + getSignatureFingerprint(app) + ", " + sender);
-		String regId =
-				C2DMClient.register(info, app, getSignatureFingerprint(app), sender, mapFromBundle(intent.getExtras()));
-		Intent outIntent = new Intent("com.google.android.c2dm.intent.REGISTRATION");
-		outIntent.setPackage(app);
-		if (regId != null) {
-			Log.d(TAG, "Success: regId for " + app + " is " + regId);
-			outIntent.putExtra("registration_id", regId);
-		} else {
-			Log.d(TAG, "Error: no reqId for " + app + "!");
-			outIntent.putExtra("error", "SERVICE_NOT_AVAILABLE");
-		}
+        AccountManager am = AccountManager.get(this);
+        Account[] accounts = am.getAccountsByType("com.google");
+        String token = null;
+        if (accounts.length>=1) {
+            try {
+                token = am.blockingGetAuthToken(accounts[0], "ac2dm", true);
+            } catch (Exception e) {
+            }
+        }
+        if (token != null) {
+            AndroidContext info = PrivacyExtension.getAndroidContext(this);
+            info.set(AndroidContext.KEY_AUTHORIZATION_TOKEN, token);
+            Log.d(TAG, app + ", " + getSignatureFingerprint(app) + ", " + sender);
+            String regId =
+                    new C2DMClient(info).registerC2DM(app, getSignatureFingerprint(app), sender, mapFromBundle(intent.getExtras()));
+            outIntent.setPackage(app);
+            if (regId != null) {
+                Log.d(TAG, "Success: regId for " + app + " is " + regId);
+                outIntent.putExtra("registration_id", regId);
+            } else {
+                Log.d(TAG, "Error: no regId for " + app + "!");
+                outIntent.putExtra("error", "SERVICE_NOT_AVAILABLE");
+            }
+        } else {
+            outIntent.putExtra("error", "CANT_LOGIN");
+        }
 		sendOrderedBroadcast(outIntent, null);
 	}
 
@@ -97,7 +113,7 @@ public class PushMessagingRegistrar extends IntentService {
 			if (pm.getApplicationInfo(s, 0) == null) {
 				return null;
 			}
-			PackageInfo packageinfo = pm.getPackageInfo(s, 64);
+			PackageInfo packageinfo = pm.getPackageInfo(s, PackageManager.GET_SIGNATURES);
 			if (packageinfo == null || packageinfo.signatures == null || packageinfo.signatures.length == 0 ||
 				packageinfo.signatures[0] == null) {
 				return null;

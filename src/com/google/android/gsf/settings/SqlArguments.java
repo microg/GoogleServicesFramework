@@ -30,13 +30,8 @@ class SqlArguments {
 			if (selection != null && !selection.isEmpty()) {
 				throw new UnsupportedOperationException("WHERE clause not supported: " + uri);
 			}
-			if (table.equals("partner")) {
-				where = "name=?";
-				args = new String[]{uri.getPathSegments().get(1)};
-			} else {
-				where = "_id=" + ContentUris.parseId(uri);
-				args = null;
-			}
+			where = "name=?";
+			args = new String[]{uri.getPathSegments().get(1)};
 		}
 	}
 

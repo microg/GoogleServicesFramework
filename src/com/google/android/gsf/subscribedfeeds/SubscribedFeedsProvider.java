@@ -9,7 +9,7 @@ import android.util.Log;
 
 public class SubscribedFeedsProvider extends ContentProvider {
 
-	private static final String TAG = "SubscribedFeedsProvider";
+    private static final String TAG = "GSF." + SubscribedFeedsProvider.class.getSimpleName();
 
 	@Override
 	public int delete(Uri uri, String selection, String[] selectionArgs) {
@@ -43,8 +43,8 @@ public class SubscribedFeedsProvider extends ContentProvider {
 	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		// TODO Auto-generated method stub
 		Log.w(TAG, "Not yet implemented: query: " + uri);
-		return new MatrixCursor(projection);
-	}
+        return new MatrixCursor(projection != null ? projection : new String[0]);
+    }
 
 	@Override
 	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {

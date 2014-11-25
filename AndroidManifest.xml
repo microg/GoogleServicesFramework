@@ -406,13 +406,14 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".gtalkservice.PushMessagingRegistrar"
+            android:permission="com.google.android.c2dm.permission.RECEIVE" />
+
         <receiver
             android:name=".gtalkservice.ReceiverProxy"
             android:permission="com.google.android.gsf.permission.C2D_MESSAGE" />
 
-        <service
-            android:name=".gtalkservice.PushMessagingRegistrar"
-            android:permission="com.google.android.c2dm.permission.RECEIVE" />
         <service
             android:name=".gtalkservice.service.GTalkService"
             android:exported="true" >
@@ -519,7 +520,7 @@
             android:authorities="com.google.settings"
             android:writePermission="com.google.android.providers.settings.permission.WRITE_GSETTINGS" />
 
-<activity android:theme="@android:style/Theme.Holo.Panel" android:label="@string/gls_settings_tos_activity_title" android:name=".settings.SettingsTosActivity" android:excludeFromRecents="true">
+        <activity android:theme="@android:style/Theme.Holo.Panel" android:label="@string/gls_settings_tos_activity_title" android:name=".settings.SettingsTosActivity" android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.settings.TERMS" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -532,19 +533,20 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-<activity android:theme="@android:style/Theme.Holo.Panel" android:name=".settings.UseLocationForServicesActivity" android:excludeFromRecents="true">
+        <activity android:theme="@android:style/Theme.Holo.Panel" android:name=".settings.UseLocationForServicesActivity" android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="com.google.android.gsf.action.SET_USE_LOCATION_FOR_SERVICES" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:theme="@android:style/Theme.Holo.Panel" android:label="@string/gls_settings_tos_activity_title" android:name=".settings.SettingsTosActivity" android:excludeFromRecents="true">
-            <intent-filter>
-                <action android:name="android.settings.TERMS" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+        <activity android:name="org.microg.gsf.deviceid.FirstTimeConfig" />
 
+        <!-- The following adds µg specific features that are not present on Google Android. Use wisely. -->
+        <service android:name="org.microg.gsf.deviceid.ManagerService" android:exported="true">
+            <intent-filter>
+                <action android:name="org.microg.gsf.IDeviceIdManager" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

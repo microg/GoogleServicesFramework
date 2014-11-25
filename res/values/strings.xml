@@ -137,7 +137,7 @@
     <string name="permlab_googleAuth_speech">Google Voice Search</string>
     <string name="permdesc_googleAuth_speech">Allows apps to sign in to Google Voice Search using the account(s) stored on this Android device.</string>
 
-    <string name="gls_settings_tos_activity_title">Google legal</string>
-<string name="location_settings_screen_title">Google apps location settings</string>
+    <string name="gls_settings_tos_activity_title">µg legal</string>
+    <string name="location_settings_screen_title">µg location settings</string>
 
 </resources>

@@ -1,14 +1,15 @@
 package com.google.android.gsf.settings;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.provider.Settings;
 import com.google.android.gsf.R;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 	private static int DATABASE_VERSION = 2;
-	private static int NEEDS_UPDATE_VERSION_BELOW = 2;
 
 	private boolean assistedGpsSettingNeedsUpdate;
 	private final Context context;
@@ -23,38 +24,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	}
 
 	private void insertDefaultPartnerSettings(final SQLiteDatabase db) {
-		final SQLiteStatement statement = db.compileStatement("INSERT OR IGNORE INTO partner(name,value) VALUES(?,?);");
-		context.getResources();
-		loadStringSetting(statement, "client_id", R.string.def_client_id);
-		final String s = android.provider.Settings.Secure.getString(context.getContentResolver(), "logging_id2");
-		if (s != null) {
-			loadSetting(statement, "logging_id2", s);
-		}
-		statement.close();
-	}
+        {
+            ContentValues cv = new ContentValues();
+            cv.put("name", "client_id");
+            cv.put("value", "android-google");
+            db.insertWithOnConflict("partner", null, cv, SQLiteDatabase.CONFLICT_IGNORE);
+        }
 
-	private void loadSetting(final SQLiteStatement statement, final String name, final Object value) {
-		statement.bindString(1, name);
-		statement.bindString(2, value.toString());
-		statement.execute();
-	}
-
-	private void loadStringSetting(final SQLiteStatement statement, final String name, final int resourceId) {
-		loadSetting(statement, name, context.getResources().getString(resourceId));
+        final String s = Settings.Secure.getString(context.getContentResolver(), "logging_id2");
+        if (s != null) {
+            ContentValues cv = new ContentValues();
+            cv.put("name", "logging_id2");
+            cv.put("value", s);
+            db.insertWithOnConflict("partner", null, cv, SQLiteDatabase.CONFLICT_IGNORE);
+        }
 	}
 
 	@Override
 	public void onCreate(final SQLiteDatabase db) {
-		db.execSQL(
-				"CREATE TABLE partner (_id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE ON CONFLICT REPLACE,value TEXT);");
-		db.execSQL("CREATE INDEX partnerIndex1 ON partner (name);");
-		insertDefaultPartnerSettings(db);
+        db.execSQL("CREATE TABLE partner (_id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT UNIQUE ON CONFLICT REPLACE,value TEXT);");
+        insertDefaultPartnerSettings(db);
 	}
 
-	@Override
-	public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
-		if (oldVersion < NEEDS_UPDATE_VERSION_BELOW) {
-			assistedGpsSettingNeedsUpdate = true;
-		}
-	}
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+    }
 }
